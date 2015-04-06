@@ -1,12 +1,13 @@
-Use sbt (http://www.scala-sbt.org/).
+Sources for paper. Require sbt (http://www.scala-sbt.org/) to compile and run.
 
-Launch sbt in project directory with no arguments.
+Use sbt run to launch experiments with default parameters same to the ones in the paper.
 
-Use run [options] to run optimization algorithms. Number of runs determines how many times each optimization algorithm should be ran.
+Use sbt "run [options]" to run optimization algorithms with different values. Number of runs determines how many times each optimization algorithm should be ran.
+Options: 
   -d <value> | --dinic <value>
-        number of dinic runs
+        number of runs of each algorithm with Dinic algorithm fitness function
   -i <value> | --isp <value>
-        number of isp runs
+        number of runs of each algorithm with Improved Shortest Path algorithm fitness function
   -v <value> | --maxV <value>
         number of vertices
   -c <value> | --maxC <value>
@@ -18,6 +19,16 @@ Use run [options] to run optimization algorithms. Number of runs determines how 
   -l <value> | --limit <value>
         fitness computations limit
   --lambda <lambda1>,<lambda2>...
-        lambda values
+        list lambda values for 1+(lambda,lambda) algorithm
   --help
         prints usage text
+
+
+Results will be located in ./logs and ./tests folders.
+Log files are called %FitnessAlgorithm%_%RunID%_%OptimizationAlgorithm%.txt and contain number of computation and best fitness value at that moment.
+Test files are called %BestFitnessValue%_%FitnessAlgorithm%_%RunID%_%OptimizationAlgorithm OptimizationOperator%.txt and contain:
+* Fitness algorithm
+* Optimization algorithm and operator on which the best fitness value was achieved
+* Some values for specific fitness algorithm
+* Fitness value (edgeCount)
+* Generated test as a list of source and target for edges

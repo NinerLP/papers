@@ -6,7 +6,7 @@ import collection.JavaConversions._
 import ru.ifmo.ctd.ngp.demo.testgen.flows.solvers.{ImprovedShortestPath, DinicSlow, Dinic}
 
 case class Config(dinic : Int = 1, isp : Int = 1, maxV : Int = 100, maxC : Int = 10000,
-                   maxE : Int = 1000, lambda : Seq[Int] = Seq(8,16,25), acyclic : Boolean = true,
+                   maxE : Int = 5000, lambda : Seq[Int] = Seq(8,16,25), acyclic : Boolean = true,
                    cLimit : Int = 500000)
 
 object Runner {

@@ -82,6 +82,8 @@ class NiceGenetics(val nodeNumber : Int, val edgeNumber : Int, val maximumCapaci
       val l = Random.nextInt(edgeNumber-1) + 1
       crossoverGraphs.add(Graph.singleCross(graphA,graphB,l))
       crossoverGraphs.add(Graph.singleCross(graphB,graphA,l))
+      //crossoverGraphs.add(Graph.cross(graphA,graphB,0.5))
+      //crossoverGraphs.add(Graph.cross(graphA,graphB,0.5))
     }
   }
 

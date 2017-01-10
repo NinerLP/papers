@@ -23,10 +23,24 @@ class MatrixGraph private (val nodeNumber : Int, val maximumCapacity : Int) {
 
 object MatrixGraph {
 
+  def debugMatOut(mgraph : MatrixGraph) : Unit = {
+    var processed = 0
+    for (start <- 0 until mgraph.nodeNumber-1) {
+      //println(s"Start: $start Processed: $processed Total: ${mgraph.capacities.size()}")
+      for (i <- 1 until mgraph.nodeNumber - start) {
+        val cap = mgraph.capacities.get(processed+i-1)
+        if (cap >= 0) {
+          println(s"$start ${start+i} $cap")
+        }
+      }
+      processed += mgraph.nodeNumber - start - 1
+    }
+  }
+
   def createRandom(nodeNumber : Int, maximumCapacity : Int): MatrixGraph = {
     // what exactly
     val mgraph = new MatrixGraph(nodeNumber, maximumCapacity)
-    for (i <- 0 until (nodeNumber*(nodeNumber+1)/2)) {
+    for (i <- 0 until (nodeNumber*(nodeNumber-1)/2)) {
       mgraph.capacities.add(Random.nextInt(maximumCapacity))
     }
     mgraph
@@ -48,6 +62,107 @@ object MatrixGraph {
     mgraph
   }
 
+  def flipMutate(source : MatrixGraph, prob : Double) : MatrixGraph = {
+    val positions = MathUtil.getFlipPositions(source.capacities.size, prob)
+    //println(positions)
+    //println(source.capacities.get(positions.get(0)))
+    for (i <- 0 until positions.size) {
+      source.capacities.set(positions.get(i), source.capacities.get(i) ^ (1 << Random.nextInt(13)))
+    }
+    //println(source.capacities.get(positions.get(0)))
+    source
+  }
+
+  def flipMutateFixed(source : MatrixGraph, amount : Int) : MatrixGraph = {
+    val positions = MathUtil.getChangePositions(amount, source.capacities.size)
+    for (i <- 0 until positions.size) {
+      source.capacities.set(positions.get(i), source.capacities.get(i) ^ (1 << Random.nextInt(13)))
+    }
+    source
+  }
+
+  def pathLength(vertices : Int): Int = {
+    var size = 1
+    while (size < vertices) {
+      if (Random.nextBoolean()) {
+        return size
+      } else {
+        size += 1
+      }
+    }
+    size
+  }
+
+
+  def pathMutate(source : MatrixGraph, amount : Int): (MatrixGraph, ArrayList[ArrayList[Int]]) = {
+    val paths = new ArrayList[ArrayList[Int]]()
+    val result = new MatrixGraph(source.nodeNumber,source.maximumCapacity)
+
+    for (i <- 0 until source.capacities.size) {
+      result.capacities.add(source.capacities.get(i))
+    }
+
+    for (i <- 0 until amount) {
+      val path = MathUtil.getPath(pathLength(source.nodeNumber),source.nodeNumber)
+      //println(path)
+      val edgeIndices = new util.ArrayList[Int]()
+      for (i <- 0 until path.size - 1) {
+        val from = path(i)
+        val to = path(i+1)
+        edgeIndices.add(from*(result.nodeNumber-1) - from*(from-1)/2 + to - from - 1)
+      }
+
+      var max = -1
+      var min = result.maximumCapacity
+      for (i <- 0 until edgeIndices.size) {
+        min = Math.min(result.capacities.get(edgeIndices.get(i)),min)
+        max = Math.max(result.capacities.get(edgeIndices.get(i)),max)
+      }
+      min = -min
+      max = result.maximumCapacity - max
+      val delta = Random.nextInt(max - min) + min
+      //println(s"$delta in [$min, $max]")
+
+      for (i <- 0 until edgeIndices.size) {
+        result.capacities.set(edgeIndices.get(i),result.capacities.get(edgeIndices.get(i))+delta)
+      }
+
+      paths.add(edgeIndices)
+    }
+    (result,paths)
+  }
+
+  def applyPath(source : MatrixGraph, edgeIndices : util.ArrayList[Int]): MatrixGraph = {
+    val result = new MatrixGraph(source.nodeNumber, source.maximumCapacity)
+    for (i <- 0 until source.capacities.size) {
+      result.capacities.add(source.capacities.get(i))
+    }
+
+    var max = -1
+    var min = result.maximumCapacity
+    for (i <- 0 until edgeIndices.size) {
+      min = Math.min(result.capacities.get(edgeIndices.get(i)),min)
+      max = Math.max(result.capacities.get(edgeIndices.get(i)),max)
+    }
+    min = -min
+    max = result.maximumCapacity - max
+    val delta = Random.nextInt(max - min) + min
+    //println(s"$delta in [$min, $max]")
+
+    for (i <- 0 until edgeIndices.size) {
+      result.capacities.set(edgeIndices.get(i),result.capacities.get(edgeIndices.get(i))+delta)
+    }
+
+    result
+  }
+
+  def printPath(path : util.ArrayList[Int]) : Unit ={
+    for (i <- 0 until path.size) {
+      print(s"${path.get(i)} ")
+    }
+    println()
+  }
+
   def uniformCross(mgraphA : MatrixGraph, mgraphB : MatrixGraph, probA : Double) : MatrixGraph = {
     val mgraphC = new MatrixGraph(mgraphA.nodeNumber,mgraphA.maximumCapacity)
 
@@ -58,6 +173,46 @@ object MatrixGraph {
 
     mgraphC
   }
+
+  def uniformBSCross(a : String, b : String, probA : Double) : Int = {
+    val builder = StringBuilder.newBuilder
+
+    for (i <- 0 until a.length) {
+      builder.append(if (Random.nextDouble() < probA) a.charAt(i) else b.charAt(i))
+    }
+
+    Integer.parseInt(builder.toString(),2)
+  }
+
+  def uniformBitCross(mgraphA : MatrixGraph, mgraphB : MatrixGraph, probA : Double) : MatrixGraph = {
+   val mgraphC = new MatrixGraph(mgraphA.nodeNumber, mgraphA.maximumCapacity)
+
+   for (i <- 0 until mgraphA.capacities.size()) {
+   	if (mgraphA.capacities.get(i) != mgraphB.capacities.get(i)) {
+      val aBin = Integer.toBinaryString(mgraphA.capacities.get(i))
+      val bBin = Integer.toBinaryString(mgraphB.capacities.get(i))
+
+      mgraphC.capacities.add(mgraphA.capacities.get(i))
+
+    } else {
+      mgraphC.capacities.add(mgraphA.capacities.get(i))
+    }
+
+   }
+    mgraphC
+  }
+
+  def tripleXor(mgraphA : MatrixGraph, mgraphB : MatrixGraph, mgraphC : MatrixGraph) : MatrixGraph = {
+    val mgraphD = new MatrixGraph(mgraphA.nodeNumber, mgraphA.maximumCapacity)
+
+    for (i <- 0 until mgraphA.capacities.size()) {
+      val tempD = Math.max(0, Math.min(mgraphA.maximumCapacity,mgraphA.capacities.get(i) ^ mgraphB.capacities.get(i) ^ mgraphC.capacities.get(i)))
+      mgraphD.capacities.add(tempD)
+    }
+
+    mgraphD
+  }
+
 
   def xorProbCross(mgraphA : MatrixGraph, mgraphB : MatrixGraph, probA : Double) : MatrixGraph = {
     val mgraphC = new MatrixGraph(mgraphA.nodeNumber,mgraphA.maximumCapacity)
@@ -70,7 +225,7 @@ object MatrixGraph {
     mgraphC
   }
 
-  def xorCross(mgraphA : MatrixGraph, mgraphB : MatrixGraph, probA : Double) : MatrixGraph = {
+  def xorCross(mgraphA : MatrixGraph, mgraphB : MatrixGraph) : MatrixGraph = {
     val mgraphC = new MatrixGraph(mgraphA.nodeNumber,mgraphA.maximumCapacity)
 
     for (i <- 0 until mgraphA.capacities.size()) {
@@ -96,13 +251,5 @@ object MatrixGraph {
 
     mgraphC
   }
-}
 
-object Test extends App {
-
-  //new MatrixOnePlusOne(100,10000,new NGPMatrixFitness(new Dinic), 500, 1).run()
-  new MatrixOnePlusLambdaLambdaXOR(100,10000, 8, 1.0*8/5050, 1.0/8, new NGPMatrixFitness(new Dinic), 20000, 1).run()
-  /*runs.add(new OnePlusLambdaLambdaRunnable(config.maxV,config.maxE, config.maxC, lambda,
-              1.0*lambda/config.maxE, 1.0/lambda, new NGPAlgorithmFitness(new Dinic()),
-              config.acyclic, config.cLimit, idAssigner.getNextID))*/
 }

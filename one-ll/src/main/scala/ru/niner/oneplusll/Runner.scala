@@ -47,11 +47,12 @@ object Runner {
 
         //dinic
         for (i <- 0 until config.dinic) {
-          runs.add(new OnePlusOneRunnable(config.maxV,config.maxE, config.maxC, new NGPAlgorithmFitness(new Dinic),
+          /*runs.add(new OnePlusOneRunnable(config.maxV,config.maxE, config.maxC, new NGPAlgorithmFitness(new Dinic),
           config.acyclic, config.cLimit, idAssigner.getNextID))
+          */
           runs.add(new NiceGeneticsRunnable(config.maxV, config.maxE, config.maxC, 100, 45, new NGPAlgorithmFitness(new Dinic),
           config.acyclic, config.cLimit, idAssigner.getNextID))
-          runs.add(new OnePlusLambdaLambdaAdaptiveRunnable(config.maxV, config.maxE, config.maxC, adaptationCoefficient,
+          /*runs.add(new OnePlusLambdaLambdaAdaptiveRunnable(config.maxV, config.maxE, config.maxC, adaptationCoefficient,
             new NGPAlgorithmFitness(new Dinic()), config.acyclic, config.cLimit, idAssigner.getNextID))
           for (lambda <- config.lambda) {
             runs.add(new OnePlusLambdaLambdaRunnable(config.maxV,config.maxE, config.maxC, lambda,
@@ -60,16 +61,16 @@ object Runner {
             runs.add(new OnePlusTwoLambdaRunnable(config.maxV,config.maxE, config.maxC, lambda,
               1.0/config.maxE, new NGPAlgorithmFitness(new Dinic()), config.acyclic,
               config.cLimit, idAssigner.getNextID ))
-          }
+          }*/
         }
 
         //isp
         for (i <- 0 until config.isp) {
-          runs.add(new OnePlusOneRunnable(config.maxV,config.maxE, config.maxC, new NGPAlgorithmFitness(new ImprovedShortestPath),
-            config.acyclic, config.cLimit, idAssigner.getNextID))
+          /*runs.add(new OnePlusOneRunnable(config.maxV,config.maxE, config.maxC, new NGPAlgorithmFitness(new ImprovedShortestPath),
+            config.acyclic, config.cLimit, idAssigner.getNextID))*/
           runs.add(new NiceGeneticsRunnable(config.maxV, config.maxE, config.maxC, 100, 45, new NGPAlgorithmFitness(new ImprovedShortestPath),
             config.acyclic, config.cLimit, idAssigner.getNextID))
-          runs.add(new OnePlusLambdaLambdaAdaptiveRunnable(config.maxV, config.maxE, config.maxC, adaptationCoefficient,
+          /*runs.add(new OnePlusLambdaLambdaAdaptiveRunnable(config.maxV, config.maxE, config.maxC, adaptationCoefficient,
             new NGPAlgorithmFitness(new ImprovedShortestPath), config.acyclic, config.cLimit, idAssigner.getNextID))
           for (lambda <- config.lambda) {
             runs.add(new OnePlusLambdaLambdaRunnable(config.maxV,config.maxE, config.maxC, lambda,
@@ -78,7 +79,7 @@ object Runner {
             runs.add(new OnePlusTwoLambdaRunnable(config.maxV,config.maxE, config.maxC, lambda,
               1.0/config.maxE, new NGPAlgorithmFitness(new ImprovedShortestPath), config.acyclic,
               config.cLimit, idAssigner.getNextID ))
-          }
+          }*/
         }
 
 

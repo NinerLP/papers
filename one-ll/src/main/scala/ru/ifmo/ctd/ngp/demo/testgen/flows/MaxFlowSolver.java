@@ -78,7 +78,7 @@ public abstract class MaxFlowSolver {
     }
 
     public final Map<String, Long> solve(Iterable<EdgeRec> edges, int source, int target, long timeLimit) {
-        TimeoutChecker.setTimeLimit(timeLimit);
+        //TimeoutChecker.setTimeLimit(timeLimit);
         try {
             boolean hasSource = false, hasTarget = false;
             for (EdgeRec e : edges) {
@@ -93,8 +93,8 @@ public abstract class MaxFlowSolver {
                 return rv;
             } else {
                 Map<String, Long> answer = solveImpl(mergeEdges(edges), source, target);
-                TimeoutChecker.check();
-                long consumed = TimeoutChecker.getTimeConsumed();
+                //TimeoutChecker.check();
+                long consumed = 0;//TimeoutChecker.getTimeConsumed();
                 answer.put(TIME_KEY, consumed);
                 return answer;
             }
@@ -105,7 +105,7 @@ public abstract class MaxFlowSolver {
             }
             return rv;
         } finally {
-             TimeoutChecker.clearTimeLimit();
+             //TimeoutChecker.clearTimeLimit();
         }
     }
 

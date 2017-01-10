@@ -12,7 +12,7 @@ class NGPMatrixFitness (val solver : MaxFlowSolver) {
   var bestValues : util.Map[String, JLong] = new util.HashMap[String, JLong]()
   var bestGraph : MatrixGraph = null
   var bestAlgorithmName : String = null
-  val target = -1
+  val target : Int = -1
   val timelimit = 0
   val OPTIMIZEON = "edgeCount";
   {
@@ -25,15 +25,15 @@ class NGPMatrixFitness (val solver : MaxFlowSolver) {
     val ngpedges = new util.ArrayList[EdgeRec]()
 
     var processed = 0
-    for (start <- 0 until mgraph.nodeNumber) {
+    for (start <- 0 until mgraph.nodeNumber-1) {
       //println("Start: " + start + ", Processed: " + processed)
-      for (i <- 0 until mgraph.nodeNumber - start) {
-        val cap = mgraph.capacities.get(processed+i)
+      for (i <- 1 until mgraph.nodeNumber - start) {
+        val cap = mgraph.capacities.get(processed+i-1)
         if (cap > 0) {
           ngpedges.add(new EdgeRec(start,start+i,cap))
         }
       }
-      processed += mgraph.nodeNumber - start
+      processed += mgraph.nodeNumber - start - 1
     }
 
 
@@ -64,16 +64,16 @@ class NGPMatrixFitness (val solver : MaxFlowSolver) {
 
 
     var processed = 0
-    for (start <- 0 until bestGraph.nodeNumber) {
+    for (start <- 0 until bestGraph.nodeNumber-1) {
       //println("Start: " + start + ", Processed: " + processed)
-      for (i <- 0 until bestGraph.nodeNumber - start) {
-        val cap = bestGraph.capacities.get(processed+i)
+      for (i <- 1 until bestGraph.nodeNumber - start) {
+        val cap = bestGraph.capacities.get(processed+i-1)
         if (cap > 0) {
           //ngpedges.add(new EdgeRec(start,start+i,cap))
           pw.println(start + " " + (start+i) + " " + cap)
         }
       }
-      processed += bestGraph.nodeNumber - start
+      processed += bestGraph.nodeNumber - start -1
     }
     pw.close()
 

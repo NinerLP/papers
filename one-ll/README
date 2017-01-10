@@ -1,5 +1,7 @@
 Sources for paper. Require sbt (http://www.scala-sbt.org/) to compile and run.
 
+NB! matrix.Runner is a mess, and needs manual adjustment to launch actually required algorithms
+
 Use sbt run to launch experiments with default parameters same to the ones in the paper.
 
 Use sbt "run [options]" to run optimization algorithms with different values. Number of runs determines how many times each optimization algorithm should be ran.

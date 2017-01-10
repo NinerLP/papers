@@ -43,16 +43,16 @@ class MatrixNiceGenetics(val nodeNumber : Int, val maximumCapacity : Int,
   }
 
   private def tourney() : util.ArrayList[Int] = {
-    val pos16 = MathUtil.getChangePositions(16,generationSize)
-    val pos8 = new util.ArrayList[Int]()
+    val pos8 = MathUtil.getChangePositions(8,generationSize)
+    //val pos8 = new util.ArrayList[Int]()
 
-    for (i <- 0 until 16 by 2) {
+    /*for (i <- 0 until 16 by 2) {
       if (parentGraphs.get(pos16.get(i)).fitnessValue >= parentGraphs.get(pos16.get(i)).fitnessValue) {
         if (Random.nextFloat() < 0.9) pos8.add(pos16.get(i)) else pos8.add(pos16.get(i+1))
       } else {
         if (Random.nextFloat() < 0.9) pos8.add(pos16.get(i + 1)) else pos8.add(pos16.get(i))
       }
-    }
+    }*/
 
     val pos4 = new util.ArrayList[Int]()
 

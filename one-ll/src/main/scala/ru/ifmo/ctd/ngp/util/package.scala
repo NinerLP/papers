@@ -94,7 +94,7 @@ package object util {
     final def mapAnd(body: Int => Boolean) = {
       if (!r.isEmpty) {
         var i = r.start
-        val total = r.numRangeElements
+        val total = r.size
         val step = r.step
         var cnt = 0
         var res = true
@@ -110,7 +110,7 @@ package object util {
     final def mapOr(body: Int => Boolean) = {
       if (!r.isEmpty) {
         var i = r.start
-        val total = r.numRangeElements
+        val total = r.size //
         val step = r.step
         var cnt = 0
         var res = false

@@ -13,32 +13,17 @@ class MatrixGraph private (val nodeNumber : Int, val maximumCapacity : Int) {
   val capacities = new ArrayList[Int]()
   var fitnessValue : Long = 0
 
-  def computeFitnessValue(fitnessFunction: NGPMatrixFitness, algorithmName : String) : Unit = {
+  def computeFitnessValue(fitnessFunction: NGPMatrixFitness, algorithmName : String) : Long = {
     fitnessValue = fitnessFunction.apply(this, algorithmName)
-    //println("Computed")
-
+    fitnessValue
   }
 
 }
 
 object MatrixGraph {
 
-  def debugMatOut(mgraph : MatrixGraph) : Unit = {
-    var processed = 0
-    for (start <- 0 until mgraph.nodeNumber-1) {
-      //println(s"Start: $start Processed: $processed Total: ${mgraph.capacities.size()}")
-      for (i <- 1 until mgraph.nodeNumber - start) {
-        val cap = mgraph.capacities.get(processed+i-1)
-        if (cap >= 0) {
-          println(s"$start ${start+i} $cap")
-        }
-      }
-      processed += mgraph.nodeNumber - start - 1
-    }
-  }
-
   def createRandom(nodeNumber : Int, maximumCapacity : Int): MatrixGraph = {
-    // what exactly
+
     val mgraph = new MatrixGraph(nodeNumber, maximumCapacity)
     for (i <- 0 until (nodeNumber*(nodeNumber-1)/2)) {
       mgraph.capacities.add(Random.nextInt(maximumCapacity))
@@ -50,9 +35,6 @@ object MatrixGraph {
     val mgraph = new MatrixGraph(source.nodeNumber, source.maximumCapacity)
     val positions = MathUtil.getChangePositions(numberToMutate, source.capacities.size)
 
-    /*for (i <- 0 until source.capacities.size) {
-      mgraph.capacities.add(source.capacities.get(i))
-    }*/
     mgraph.capacities.addAll(source.capacities)
 
     for (i <- 0 until positions.size) {
@@ -63,105 +45,31 @@ object MatrixGraph {
   }
 
   def flipMutate(source : MatrixGraph, prob : Double) : MatrixGraph = {
+    val mgraph = new MatrixGraph(source.nodeNumber, source.maximumCapacity)
     val positions = MathUtil.getFlipPositions(source.capacities.size, prob)
-    //println(positions)
-    //println(source.capacities.get(positions.get(0)))
+
+    mgraph.capacities.addAll(source.capacities)
+
     for (i <- 0 until positions.size) {
-      source.capacities.set(positions.get(i), source.capacities.get(i) ^ (1 << Random.nextInt(13)))
+      mgraph.capacities.set(positions.get(i), source.capacities.get(i) ^ (1 << Random.nextInt(13)))
     }
-    //println(source.capacities.get(positions.get(0)))
-    source
+    mgraph
   }
 
   def flipMutateFixed(source : MatrixGraph, amount : Int) : MatrixGraph = {
-    val positions = MathUtil.getChangePositions(amount, source.capacities.size)
+    val mgraph = new MatrixGraph(source.nodeNumber, source.maximumCapacity)
+    val positions = MathUtil.getBitChangePositions(amount,source.capacities.size)
+
+    mgraph.capacities.addAll(source.capacities)
+
     for (i <- 0 until positions.size) {
-      source.capacities.set(positions.get(i), source.capacities.get(i) ^ (1 << Random.nextInt(13)))
+      val pos = positions.get(i)._1
+      val offset = positions.get(i)._2
+      mgraph.capacities.set(pos, source.capacities.get(pos) ^ (1 << offset))
     }
-    source
+    mgraph
   }
 
-  def pathLength(vertices : Int): Int = {
-    var size = 1
-    while (size < vertices) {
-      if (Random.nextBoolean()) {
-        return size
-      } else {
-        size += 1
-      }
-    }
-    size
-  }
-
-
-  def pathMutate(source : MatrixGraph, amount : Int): (MatrixGraph, ArrayList[ArrayList[Int]]) = {
-    val paths = new ArrayList[ArrayList[Int]]()
-    val result = new MatrixGraph(source.nodeNumber,source.maximumCapacity)
-
-    for (i <- 0 until source.capacities.size) {
-      result.capacities.add(source.capacities.get(i))
-    }
-
-    for (i <- 0 until amount) {
-      val path = MathUtil.getPath(pathLength(source.nodeNumber),source.nodeNumber)
-      //println(path)
-      val edgeIndices = new util.ArrayList[Int]()
-      for (i <- 0 until path.size - 1) {
-        val from = path(i)
-        val to = path(i+1)
-        edgeIndices.add(from*(result.nodeNumber-1) - from*(from-1)/2 + to - from - 1)
-      }
-
-      var max = -1
-      var min = result.maximumCapacity
-      for (i <- 0 until edgeIndices.size) {
-        min = Math.min(result.capacities.get(edgeIndices.get(i)),min)
-        max = Math.max(result.capacities.get(edgeIndices.get(i)),max)
-      }
-      min = -min
-      max = result.maximumCapacity - max
-      val delta = Random.nextInt(max - min) + min
-      //println(s"$delta in [$min, $max]")
-
-      for (i <- 0 until edgeIndices.size) {
-        result.capacities.set(edgeIndices.get(i),result.capacities.get(edgeIndices.get(i))+delta)
-      }
-
-      paths.add(edgeIndices)
-    }
-    (result,paths)
-  }
-
-  def applyPath(source : MatrixGraph, edgeIndices : util.ArrayList[Int]): MatrixGraph = {
-    val result = new MatrixGraph(source.nodeNumber, source.maximumCapacity)
-    for (i <- 0 until source.capacities.size) {
-      result.capacities.add(source.capacities.get(i))
-    }
-
-    var max = -1
-    var min = result.maximumCapacity
-    for (i <- 0 until edgeIndices.size) {
-      min = Math.min(result.capacities.get(edgeIndices.get(i)),min)
-      max = Math.max(result.capacities.get(edgeIndices.get(i)),max)
-    }
-    min = -min
-    max = result.maximumCapacity - max
-    val delta = Random.nextInt(max - min) + min
-    //println(s"$delta in [$min, $max]")
-
-    for (i <- 0 until edgeIndices.size) {
-      result.capacities.set(edgeIndices.get(i),result.capacities.get(edgeIndices.get(i))+delta)
-    }
-
-    result
-  }
-
-  def printPath(path : util.ArrayList[Int]) : Unit ={
-    for (i <- 0 until path.size) {
-      print(s"${path.get(i)} ")
-    }
-    println()
-  }
 
   def uniformCross(mgraphA : MatrixGraph, mgraphB : MatrixGraph, probA : Double) : MatrixGraph = {
     val mgraphC = new MatrixGraph(mgraphA.nodeNumber,mgraphA.maximumCapacity)
@@ -176,9 +84,10 @@ object MatrixGraph {
 
   def uniformBSCross(a : String, b : String, probA : Double) : Int = {
     val builder = StringBuilder.newBuilder
-
-    for (i <- 0 until a.length) {
-      builder.append(if (Random.nextDouble() < probA) a.charAt(i) else b.charAt(i))
+    val aA = "0"*(13-a.length())+a
+    val bB = "0"*(13-b.length())+b
+    for (i <- 0 until aA.length) {
+      builder.append(if (Random.nextDouble() < probA) aA.charAt(i) else bB.charAt(i))
     }
 
     Integer.parseInt(builder.toString(),2)
@@ -191,8 +100,8 @@ object MatrixGraph {
    	if (mgraphA.capacities.get(i) != mgraphB.capacities.get(i)) {
       val aBin = Integer.toBinaryString(mgraphA.capacities.get(i))
       val bBin = Integer.toBinaryString(mgraphB.capacities.get(i))
-
-      mgraphC.capacities.add(mgraphA.capacities.get(i))
+      val cBin = uniformBSCross(aBin, bBin, probA)
+      mgraphC.capacities.add(cBin)
 
     } else {
       mgraphC.capacities.add(mgraphA.capacities.get(i))
@@ -239,17 +148,142 @@ object MatrixGraph {
   def singleCross(mgraphA : MatrixGraph, mgraphB : MatrixGraph, l : Int): MatrixGraph = {
     val mgraphC = new MatrixGraph(mgraphA.nodeNumber, mgraphA.maximumCapacity)
 
-    /*for (i <- 0 until l) {
-      mgraphC.capacities.add(mgraphA.capacities.get(i))
-    }*/
-
     mgraphC.capacities.addAll(mgraphA.capacities.subList(0,l))
-    /*for (i <- l until mgraphA.nodeNumber) {
-      mgraphC.capacities.add(mgraphB.capacities.get(i))
-    }*/
     mgraphC.capacities.addAll(mgraphB.capacities.subList(l,mgraphB.capacities.size()))
 
     mgraphC
   }
+
+
+  /*
+    paths addons
+   */
+  def pathLength() : Int = {
+    if (Random.nextBoolean()) {
+      Random.nextInt(10)+1
+    } else {
+      Random.nextInt(9)+90
+    }
+
+  }
+
+  class MutationPath(val edgeIndices : ArrayList[Int], val delta : Int)
+
+  def pathMutate(source : MatrixGraph, amount : Int, lengthFun : () => Int = pathLength): (MatrixGraph, ArrayList[MutationPath]) = {
+    val paths = new ArrayList[MutationPath]()
+    val result = new MatrixGraph(source.nodeNumber,source.maximumCapacity)
+
+    for (i <- 0 until source.capacities.size) {
+      result.capacities.add(source.capacities.get(i))
+    }
+
+    var k = 0
+    while (k < amount) {
+      val path = MathUtil.getPath(lengthFun(),source.nodeNumber)
+      //println(path)
+      val edgeIndices = new util.ArrayList[Int]()
+      for (i <- 0 until path.size - 1) {
+        val from = path(i)
+        val to = path(i+1)
+        edgeIndices.add(from*(result.nodeNumber-1) - from*(from-1)/2 + to - from - 1)
+      }
+
+      var max = -1
+      var min = result.maximumCapacity+1
+      for (i <- 0 until edgeIndices.size) {
+        min = Math.min(result.capacities.get(edgeIndices.get(i)),min)
+        max = Math.max(result.capacities.get(edgeIndices.get(i)),max)
+      }
+      min = -min
+      max = result.maximumCapacity - max
+
+      val delta = Random.nextInt(Math.max(max - min,1)) + min
+      //println(s"$delta in [$min, $max]")
+
+      if (delta != 0) {
+        for (i <- 0 until edgeIndices.size) {
+          result.capacities.set(edgeIndices.get(i),result.capacities.get(edgeIndices.get(i))+delta)
+        }
+        paths.add(new MutationPath(edgeIndices,delta))
+        k+=1
+      }
+    }
+    //println(s"did $k paths")
+    (result,paths)
+  }
+
+  def applyPath(source : MatrixGraph, path: MutationPath): MatrixGraph = {
+    val result = new MatrixGraph(source.nodeNumber, source.maximumCapacity)
+    for (i <- 0 until source.capacities.size) {
+      result.capacities.add(source.capacities.get(i))
+    }
+
+    var max = -1
+    var min = result.maximumCapacity
+    for (i <- 0 until path.edgeIndices.size) {
+      min = Math.min(result.capacities.get(path.edgeIndices.get(i)),min)
+      max = Math.max(result.capacities.get(path.edgeIndices.get(i)),max)
+    }
+    min = -min
+    max = result.maximumCapacity - max
+
+    val delta = Math.min(max, Math.max(min, path.delta))
+    //println(s"$delta in [$min, $max]")
+
+    for (i <- 0 until path.edgeIndices.size) {
+      result.capacities.set(path.edgeIndices.get(i),result.capacities.get(path.edgeIndices.get(i))+delta)
+    }
+
+    result
+  }
+
+  def applyNewPath(source : MatrixGraph, edgeIndices: List[Int]): MatrixGraph = {
+    val result = new MatrixGraph(source.nodeNumber, source.maximumCapacity)
+    for (i <- 0 until source.capacities.size) {
+      result.capacities.add(source.capacities.get(i))
+    }
+
+    var max = -1
+    var min = result.maximumCapacity
+    for (i <- 0 until edgeIndices.size) {
+      min = Math.min(result.capacities.get(edgeIndices(i)),min)
+      max = Math.max(result.capacities.get(edgeIndices(i)),max)
+    }
+    min = -min
+    max = result.maximumCapacity - max
+
+    val delta = Random.nextInt(Math.max(max - min,1)) + min
+    //println(s"$delta in [$min, $max]")
+
+    for (i <- 0 until edgeIndices.size) {
+      result.capacities.set(edgeIndices(i),result.capacities.get(edgeIndices(i))+delta)
+    }
+
+    result
+  }
+
+
+  def printPath(path : util.ArrayList[Int]) : Unit ={
+    for (i <- 0 until path.size) {
+      print(s"${path.get(i)} ")
+    }
+    println()
+  }
+
+
+  def debugMatOut(mgraph : MatrixGraph) : Unit = {
+    var processed = 0
+    for (start <- 0 until mgraph.nodeNumber-1) {
+
+      for (i <- 1 until mgraph.nodeNumber - start) {
+        val cap = mgraph.capacities.get(processed+i-1)
+        if (cap >= 0) {
+          println(s"$start ${start+i} $cap")
+        }
+      }
+      processed += mgraph.nodeNumber - start - 1
+    }
+  }
+
 
 }

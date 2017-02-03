@@ -16,6 +16,7 @@ class MatrixOnePlusOne(val nodeNumber : Int, val maximumCapacity : Int,
 
   private def init() : Unit = {
     parentGraph = MatrixGraph.createRandom(nodeNumber, maximumCapacity)
+
     parentGraph.computeFitnessValue(fitnessFunction, algorithmName + " parent")
     computationsCount += 1
 
@@ -28,17 +29,15 @@ class MatrixOnePlusOne(val nodeNumber : Int, val maximumCapacity : Int,
   }
 
   private def mutate() : Unit = {
-    //println("Mutating")
     val len = parentGraph.capacities.size()// * (parentGraph.capacities.size() + 1) / 2
     val numberToMutate = MathUtil.getBinomial(len, 1.0/len)
-    //println(len + " " + numberToMutate)
+
     mutantGraph = MatrixGraph.mutate(parentGraph, numberToMutate)
     mutantGraph.computeFitnessValue(fitnessFunction, algorithmName + " mutant")
     computationsCount += 1
   }
 
   private def select(): Unit = {
-    //println("Selecting")
     if (mutantGraph.fitnessValue > parentGraph.fitnessValue) {
       log.println(computationsCount + " " + mutantGraph.fitnessValue)
       println("Run " + runID + " got improvement!")

@@ -11,6 +11,18 @@ object MathUtil {
     positions.subList(0,neededAmount)
   }
 
+  def getBitChangePositions(neededAmount : Int, size : Int) : util.List[(Int,Int)] = {
+    val positions = new util.ArrayList[(Int,Int)]()
+    for (i <- 0 until size) {
+      for (j <- 0 until 13) {
+        positions.add((i,j))
+      }
+    }
+    util.Collections.shuffle(positions)
+    positions.subList(0,neededAmount)
+  }
+
+
   def getBinomial(n : Int, p : Double): Int = {
     var result = 0
     for (i <- 0 until n) if (Random.nextDouble() < p) result+=1
@@ -45,7 +57,6 @@ object MathUtil {
 
   def getPath(pLength : Int, vertexNum : Int): List[Int] = {
     val steps = List.range(1,vertexNum-1)
-    Random.shuffle(steps)
     List(0) ++ Random.shuffle(steps).take(pLength).sorted ++ List(vertexNum-1)
 
   }

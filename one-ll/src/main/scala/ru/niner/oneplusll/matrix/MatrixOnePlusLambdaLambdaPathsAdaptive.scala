@@ -4,21 +4,21 @@ import java.io.{File, PrintWriter}
 import java.lang.{Long => JLong}
 import java.util
 
-import ru.niner.oneplusll.MathUtil
 import ru.niner.oneplusll.matrix.MatrixGraph.MutationPath
 
-class MatrixOnePlusLambdaLambdaPaths(val nodeNumber : Int, val maximumCapacity : Int,
-                                     val lambda : Int,
-                                     val fitnessFunction : NGPMatrixFitness, val computationsLimit : Int,
-                                     runID : Int) {
-    val algorithmName = "1+ll" + lambda + "-" + lambda + "+Paths"
+class MatrixOnePlusLambdaLambdaPathsAdaptive(val nodeNumber : Int, val maximumCapacity : Int,
+                                             val lambda : Int, val mutationProbability : Double, val crossoverProbabilityForA : Double,
+                                             val fitnessFunction : NGPMatrixFitness, val computationsLimit : Int,
+                                             runID : Int) {
+    val algorithmName : String = "1+LL_PathsAdaptive"
     var computationsCount = 0
-    var parentGraph : MatrixGraph = null
+    var parentGraph : MatrixGraph = _
     val mutantGraphs : util.ArrayList[MatrixGraph] = new util.ArrayList[MatrixGraph]()
     val mutantPaths : util.ArrayList[util.ArrayList[MutationPath]] = new util.ArrayList[util.ArrayList[MutationPath]]()
     val crossoverGraphs : util.ArrayList[MatrixGraph] = new util.ArrayList[MatrixGraph]()
-    var crossoverPaths : util.ArrayList[MutationPath] = new util.ArrayList[MutationPath]()
-    var log : PrintWriter = null
+    var log : PrintWriter = _
+    var lambdaPar = 1.0
+    val adaptationCoefficient = 1.5
 
     private def init(): Unit = {
       parentGraph = MatrixGraph.createRandom(nodeNumber,maximumCapacity)
@@ -29,17 +29,17 @@ class MatrixOnePlusLambdaLambdaPaths(val nodeNumber : Int, val maximumCapacity :
       file.createNewFile()
       log = new PrintWriter(file,"UTF-8")
 
-      log.println("computation fitness size")
-      log.println(computationsCount + " " + parentGraph.fitnessValue)
+      log.println("computation fitness lambda usedlambda")
+      log.println(computationsCount + " " + parentGraph.fitnessValue + " " + lambdaPar + " " + Math.max(lambdaPar.toInt,1))
     }
 
     private def mutate(): Unit = {
       //val len = parentGraph.capacities.size()
-      val numberToMutate = lambda// MathUtil.getBinomial(len, mutationProbability)
+      val numberToMutate = Math.max(lambdaPar.toInt,1)// MathUtil.getBinomial(len, mutationProbability)
 
       mutantGraphs.clear()
       mutantPaths.clear()
-      for (i <- 0 until lambda) {
+      for (i <- 0 until numberToMutate) {
         val res = MatrixGraph.pathMutate(parentGraph,numberToMutate)
         mutantGraphs.add(res._1)
         mutantPaths.add(res._2)
@@ -53,7 +53,7 @@ class MatrixOnePlusLambdaLambdaPaths(val nodeNumber : Int, val maximumCapacity :
       var bestMutantGraph : MatrixGraph = null
       var bestMutantPaths : util.ArrayList[MutationPath] = null
 
-      for (i <- 0 until lambda) {
+      for (i <- 0 until Math.max(lambdaPar.toInt,1)) {
         val fitnessValue = mutantGraphs.get(i).fitnessValue
 
         if (fitnessValue >= bestFitnessValue) {
@@ -67,10 +67,8 @@ class MatrixOnePlusLambdaLambdaPaths(val nodeNumber : Int, val maximumCapacity :
       //println(s"${bestMutantGraph.fitnessValue} fitness")
 
       crossoverGraphs.clear()
-      crossoverPaths.clear()
-      for (i <- 0 until lambda) {
+      for (i <- 0 until Math.max(lambdaPar.toInt,1)) {
         crossoverGraphs.add(MatrixGraph.applyPath(bestMutantGraph,bestMutantPaths.get(i)))
-        crossoverPaths.add(bestMutantPaths.get(i))
         //crossoverGraphs.add(MatrixGraph.uniformCross(bestMutantGraph, parentGraph, crossoverProbabilityForA))
         crossoverGraphs.get(i).computeFitnessValue(fitnessFunction, algorithmName + " crossover")
         computationsCount += 1
@@ -87,29 +85,30 @@ class MatrixOnePlusLambdaLambdaPaths(val nodeNumber : Int, val maximumCapacity :
     private def select(): Unit = {
       var bestFitnessValue = 0L
       var bestCrossoverGraph : MatrixGraph = null
-      var bestLength = 0
 
-      for (i <- 0 until lambda) {
+      for (i <- 0 until Math.max(lambdaPar.toInt,1)) {
         val fitnessValue = crossoverGraphs.get(i).fitnessValue
 
         if (fitnessValue >= bestFitnessValue) {
           bestCrossoverGraph = crossoverGraphs.get(i)
-          bestLength = crossoverPaths.get(i).edgeIndices.size()
           bestFitnessValue = fitnessValue
-
         }
       }
 
       if (bestCrossoverGraph.fitnessValue > parentGraph.fitnessValue) {
-        log.println(computationsCount + " " + bestCrossoverGraph.fitnessValue + " " + bestLength)
-        println("Run " + runID + " got improvement!")
+        log.println(computationsCount + " " + bestCrossoverGraph.fitnessValue + " " + lambdaPar + " " + Math.max(lambdaPar.toInt,1))
+        lambdaPar = lambdaPar / adaptationCoefficient
+      } else {
+        lambdaPar = Math.min(Math.pow(adaptationCoefficient,0.25) * lambdaPar,100.0)
       }
+
       if (bestCrossoverGraph.fitnessValue >= parentGraph.fitnessValue) parentGraph = bestCrossoverGraph
     }
 
 
     def run(): Unit = {
       init()
+      var progress = 10000
       while((parentGraph.fitnessValue < JLong.MAX_VALUE)
         && (fitnessFunction.target == -1 || parentGraph.fitnessValue < fitnessFunction.target)
         && (computationsCount < computationsLimit)) {
@@ -117,11 +116,12 @@ class MatrixOnePlusLambdaLambdaPaths(val nodeNumber : Int, val maximumCapacity :
         cross()
         select()
 
-        if (computationsCount % 10000 < 2*lambda) {
+        if (computationsCount > progress) {
           println("Run " + runID + " " + computationsCount + " computations")
+          progress += 10000
         }
       }
-      log.println(computationsCount + " " + parentGraph.fitnessValue)
+      log.println(computationsCount + " " + parentGraph.fitnessValue + " " + lambdaPar + " " + Math.max(lambdaPar.toInt,1))
       log.close()
       fitnessFunction.dumpResults(runID)
     }

@@ -22,7 +22,7 @@ abstract class Initialization[D: DomainType, C: CodomainType, W[+_D, +_C]: Worki
    * @return the working set after the initialization.
    */
   final def apply() = {
-    initializationStartedAccessor.fire(); performInitialization |> initializationFinishedAccessor.fire
+    initializationStartedAccessor.fire(()); performInitialization |> initializationFinishedAccessor.fire
   }
   /**
    * Performs an initialization of an optimization algorithm.

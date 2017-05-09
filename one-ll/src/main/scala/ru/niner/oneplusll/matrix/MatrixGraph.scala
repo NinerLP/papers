@@ -44,6 +44,24 @@ object MatrixGraph {
     mgraph
   }
 
+  def fastMutate(source : MatrixGraph, beta : Double) : MatrixGraph = {
+    val mgraph = new MatrixGraph(source.nodeNumber, source.maximumCapacity)
+
+    val len = source.capacities.size()
+    val fastNumber = MathUtil.getZipf(1, len, beta)
+    val numberToMutate = MathUtil.getBinomial(len, 1.0*fastNumber/len)
+    val positions = MathUtil.getChangePositions(numberToMutate, source.capacities.size)
+    //println(numberToMutate + " " + 1.0*fastNumber/len)
+
+    mgraph.capacities.addAll(source.capacities)
+
+    for (i <- 0 until positions.size) {
+      mgraph.capacities.set(positions.get(i),Random.nextInt(source.maximumCapacity))
+    }
+
+    mgraph
+  }
+
   def flipMutate(source : MatrixGraph, prob : Double) : MatrixGraph = {
     val mgraph = new MatrixGraph(source.nodeNumber, source.maximumCapacity)
     val positions = MathUtil.getFlipPositions(source.capacities.size, prob)
@@ -71,15 +89,25 @@ object MatrixGraph {
   }
 
 
-  def uniformCross(mgraphA : MatrixGraph, mgraphB : MatrixGraph, probA : Double) : MatrixGraph = {
+  def uniformCross(mgraphA : MatrixGraph, mgraphB : MatrixGraph, probA : Double) : (MatrixGraph, MatrixGraph) = {
     val mgraphC = new MatrixGraph(mgraphA.nodeNumber,mgraphA.maximumCapacity)
+    val mgraphD = new MatrixGraph(mgraphA.nodeNumber,mgraphA.maximumCapacity)
 
     for (i <- 0 until mgraphA.capacities.size()) {
-      val tempC = if (Random.nextDouble() < probA) mgraphA.capacities.get(i) else mgraphB.capacities.get(i)
-      mgraphC.capacities.add(tempC)
+      val tempA = mgraphA.capacities.get(i)
+      val tempB = mgraphB.capacities.get(i)
+
+      if (Random.nextDouble() < probA) {
+        mgraphC.capacities.add(tempA)
+        mgraphD.capacities.add(tempB)
+      } else {
+        mgraphC.capacities.add(tempB)
+        mgraphD.capacities.add(tempA)
+      }
+
     }
 
-    mgraphC
+    (mgraphC, mgraphD)
   }
 
   def uniformBSCross(a : String, b : String, probA : Double) : Int = {

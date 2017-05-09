@@ -8,7 +8,8 @@ import ru.ifmo.ctd.ngp.demo.testgen.flows.solvers.{ImprovedShortestPath, DinicSl
 
 case class Config(dinic : Int = 1, isp : Int = 1, maxV : Int = 100, maxC : Int = 8191,
                   maxE : Int = 5000, lambda : Seq[Int] = Seq(8,16,25), acyclic : Boolean = true,
-                  cLimit : Int = 500000, adaptationC : Double = 1.5)
+                  cLimit : Int = 500000, adaptationC : Double = 1.5, beta : Double = 1.5,
+                  popSize : Int = 100, crossSize : Int = 45)
 
 object Runner {
 
@@ -28,6 +29,8 @@ object Runner {
         c.copy(acyclic = x)} text("generate acyclic graphs")
       opt[Double]('k',"adaptation") action { (x,c) =>
         c.copy(adaptationC = x) } text("adaptation coefficient")
+      opt[Double]('b',"beta") action { (x,c) =>
+        c.copy(beta = x) } text("beta power distribution parameter")
       opt[Int]('l',"limit") action { (x,c) =>
         c.copy(cLimit = x)} text("fitness computations limit")
       opt[Seq[Int]]("lambda") valueName("<lambda1>,<lambda2>...") action { (x,c) =>
@@ -51,18 +54,28 @@ object Runner {
         //dinic
 
         for (i <- 0 until config.dinic) {
-          //runs.add(new MatrixOnePlusLLBSAdaptiveRunnable(config,new NGPMatrixFitness(new Dinic),idAssigner.getNextID))
-          runs.add(new MatrixOnePlusOnePathsWeightedRunnable(config,new NGPMatrixFitness(new Dinic), idAssigner.getNextID))
-          for (lambda <- config.lambda) {
+          runs.add(new MatrixFastOnePlusOneRunnable(config, new NGPMatrixFitness(new Dinic), idAssigner.getNextID))
+          runs.add(new MatrixOnePlusOneRunnable(config, new NGPMatrixFitness(new Dinic), idAssigner.getNextID))
+          runs.add(new MatrixFastNGRunnable(config, new NGPMatrixFitness(new Dinic), idAssigner.getNextID))
+          runs.add(new MatrixNiceGeneticsRunnable(config, new NGPMatrixFitness(new Dinic), idAssigner.getNextID))
+          //runs.add(new TestGeneticsRunnable(config, new NGPMatrixFitness(new Dinic), idAssigner.getNextID))
+          //runs.add(new TestFastGeneticsRunnable(config, new NGPMatrixFitness(new Dinic), idAssigner.getNextID))
+          //for (lambda <- config.lambda) {
             //runs.add(new MatrixOnePlusLambdaLambdaPathsRunnable(config,lambda,new NGPMatrixFitness(new Dinic),idAssigner.getNextID))
             //runs.add(new MatrixOnePlusLLBSRunnable(config,lambda,new NGPMatrixFitness(new Dinic),idAssigner.getNextID))
-          }
+          //}
         }
 
         for (i <- 0 until config.isp) {
-          for (lambda <- config.lambda) {
+          runs.add(new MatrixFastOnePlusOneRunnable(config, new NGPMatrixFitness(new ImprovedShortestPath), idAssigner.getNextID))
+          runs.add(new MatrixOnePlusOneRunnable(config, new NGPMatrixFitness(new ImprovedShortestPath), idAssigner.getNextID))
+          runs.add(new MatrixFastNGRunnable(config, new NGPMatrixFitness(new ImprovedShortestPath), idAssigner.getNextID))
+          runs.add(new MatrixNiceGeneticsRunnable(config, new NGPMatrixFitness(new ImprovedShortestPath), idAssigner.getNextID))
+          //runs.add(new TestGeneticsRunnable(config, new NGPMatrixFitness(new ImprovedShortestPath), idAssigner.getNextID))
+          //runs.add(new TestFastGeneticsRunnable(config, new NGPMatrixFitness(new ImprovedShortestPath), idAssigner.getNextID))
+          //for (lambda <- config.lambda) {
             //runs.add(new MatrixOnePlusLLBSRunnable(config,lambda,new NGPMatrixFitness(new ImprovedShortestPath),idAssigner.getNextID))
-          }
+          //}
         }
 
 

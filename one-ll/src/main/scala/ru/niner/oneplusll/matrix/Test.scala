@@ -9,7 +9,13 @@ import ru.niner.oneplusll.MathUtil
 import scala.util.Random
 
 object Test extends App {
-
+  val pw = new PrintWriter(new File("Hello.csv"))
+  pw.println("value")
+  val n = 100
+  for (i <- 0 to 100000) {
+    pw.println(s"$i,${MathUtil.getZipf(1, n/2, 1.5)}")
+  }
+  pw.close()
 }
 
 class PathInfo(val graph : Int, val length : Int, val phase : Int, val initialF : Long, val achievedF : Long) {

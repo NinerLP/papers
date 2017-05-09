@@ -7,7 +7,7 @@ import ru.niner.oneplusll.MathUtil
 
 import scala.util.Random
 
-class MatrixNiceGenetics(val nodeNumber : Int, val maximumCapacity : Int,
+class TestGenetics(val nodeNumber : Int, val maximumCapacity : Int,
                    val generationSize : Int, val crossoverSize : Int, val fitnessFunction: NGPMatrixFitness,
                    val computationsLimit : Int, runID : Int) {
   val algorithmName = "NiceGenetics"
@@ -77,14 +77,16 @@ class MatrixNiceGenetics(val nodeNumber : Int, val maximumCapacity : Int,
 
   private def crossover() : Unit = {
     crossoverGraphs.clear()
-    for (i <- 0 until 2*crossoverSize) {
+    for (i <- 0 until crossoverSize) {
       val pos = tourney()
       val graphA = parentGraphs.get(pos.get(0))
       val graphB = parentGraphs.get(pos.get(1))
-      val len = parentGraphs.get(0).capacities.size()
-      val cross = MatrixGraph.uniformCross(graphA,graphB,0.5)
-      crossoverGraphs.add(cross._1)
-      //crossoverGraphs.add(cross._2)
+      //val len = parentGraphs.get(0).capacities.size()
+      //val l = Random.nextInt(len-1) + 1
+
+      //val cross = MatrixGraph.uniformCross(graphA,graphB,0.5)
+      crossoverGraphs.add(graphA)
+      crossoverGraphs.add(graphB)
     }
   }
 

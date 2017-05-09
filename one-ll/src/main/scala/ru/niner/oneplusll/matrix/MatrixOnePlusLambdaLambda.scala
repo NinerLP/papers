@@ -57,7 +57,7 @@ class MatrixOnePlusLambdaLambda(val nodeNumber : Int, val maximumCapacity : Int,
 
       crossoverGraphs.clear()
       for (i <- 0 until lambda) {
-        crossoverGraphs.add(MatrixGraph.uniformCross(bestMutantGraph, parentGraph, crossoverProbabilityForA))
+        crossoverGraphs.add(MatrixGraph.uniformCross(bestMutantGraph, parentGraph, crossoverProbabilityForA)._1)
         crossoverGraphs.get(i).computeFitnessValue(fitnessFunction, algorithmName + " crossover")
         computationsCount += 1
       }

@@ -2,8 +2,12 @@ package ru.niner.oneplusll
 
 import java.util
 import scala.util.Random
+import org.apache.commons.math3.distribution.ZipfDistribution
 
 object MathUtil {
+
+  var zipfGenerator : ZipfDistribution = null
+
   def getChangePositions(neededAmount : Int, size : Int) : util.List[Int] = {
     val positions = new util.ArrayList[Int]()
     for (i <- 0 until size) positions.add(i)
@@ -36,6 +40,26 @@ object MathUtil {
     // (1-p)^n <= s <= (1-p)^(n-1)
     Math.floor(Math.log(s/p)/Math.log(q)).toInt + 1
   }
+
+  def getPowerLaw(x0 : Int, x1 : Int, b : Double) : Double = {
+    val y = Random.nextDouble()
+    val x0pow = Math.pow(x0,b+1)
+    val x1pow = Math.pow(x1,b+1)
+
+    Math.floor(1.0 * Math.pow((x1pow-x0pow)*y + x0pow,1.0/(b+1)))
+  }
+
+  def initZipf(x0: Int, x1 : Int, b : Double) : Unit = {
+    zipfGenerator = new ZipfDistribution(1+x1-x0, b)
+  }
+
+  def getZipf(x0 : Int, x1 : Int, b : Double) : Int = {
+    if (zipfGenerator == null) {
+      initZipf(x0, x1, b)
+    }
+    zipfGenerator.sample()
+  }
+
 
   def getFlipPositions(length : Int, p : Double) : util.ArrayList[Int] =  {
     val positions = new util.ArrayList[Int]()

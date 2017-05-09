@@ -8,6 +8,15 @@ class MatrixOnePlusOneRunnable(config: Config, fitness: NGPMatrixFitness, runID 
   }
 }
 
+class MatrixFastOnePlusOneRunnable(config: Config, fitness: NGPMatrixFitness, runID : Int) extends Runnable {
+  override def run() : Unit = {
+    println("Started Fast 1+1 RunID: " + runID)
+    new MatrixFastOnePlusOne(config.maxV, config.maxC, fitness, config.cLimit, config.beta, runID).run();
+    println("Completed Fast 1+1 RunID: " + runID)
+  }
+}
+
+
 
 class MatrixOnePlusOnePathsRunnable(config: Config, fitness : NGPMatrixFitness, runID : Int) extends Runnable {
   override def run() : Unit = {
@@ -50,6 +59,41 @@ class MatrixOnePlusOnePathsWeightedRunnable(config : Config, fitness : NGPMatrix
     println(s"Completed 1+1+PW RunID: $runID")
   }
 }
+
+class MatrixFastNGRunnable(config : Config, val fitnessFunction: NGPMatrixFitness, runID : Int) extends  Runnable {
+  def run() : Unit = {
+    println("Started FastNG RunID: " + runID)
+    new MatrixFastNiceGenetics(config.maxV,config.maxC,config.popSize,config.crossSize,fitnessFunction,config.cLimit,config.beta,runID).run()
+    println("Completed FastNG RunID: " + runID)
+  }
+}
+
+class MatrixNiceGeneticsRunnable(config : Config, val fitnessFunction: NGPMatrixFitness, runID : Int) extends  Runnable {
+  def run() : Unit = {
+    println("Started NiceGenetics RunID: " + runID)
+    new MatrixNiceGenetics(config.maxV,config.maxC,config.popSize,config.crossSize,fitnessFunction,config.cLimit,runID).run()
+    println("Completed NiceGenetics RunID: " + runID)
+  }
+}
+
+
+class TestGeneticsRunnable(config : Config, val fitnessFunction: NGPMatrixFitness, runID : Int) extends  Runnable {
+  def run() : Unit = {
+    println("Started TestGen RunID: " + runID)
+    new TestGenetics(config.maxV,config.maxC,config.popSize,config.crossSize,fitnessFunction,config.cLimit,runID).run()
+    println("Completed TestGen RunID: " + runID)
+  }
+}
+
+
+class TestFastGeneticsRunnable(config : Config, val fitnessFunction: NGPMatrixFitness, runID : Int) extends  Runnable {
+  def run() : Unit = {
+    println("Started FastNG RunID: " + runID)
+    new TestFastGenetics(config.maxV,config.maxC,config.popSize,config.crossSize,fitnessFunction,config.cLimit,config.beta,runID).run()
+    println("Completed FastNG RunID: " + runID)
+  }
+}
+
 
 /* cleaned up to here */
 
@@ -115,15 +159,7 @@ class OnePlusLambdaLambdaAdaptiveRunnable(nodeNumber : Int, edgeNumber : Int, ma
   }
 }
 */
-class MatrixNiceGeneticsRunnable(nodeNumber : Int, maximumCapacity : Int,
-                                 val generationSize : Int, val crossoverSize : Int, val fitnessFunction: NGPMatrixFitness,
-                                 val computationsLimit : Int, runID : Int) extends  Runnable {
-  def run() : Unit = {
-    println("Started NiceGenetics RunID: " + runID)
-    new MatrixNiceGenetics(nodeNumber,maximumCapacity,generationSize,crossoverSize,fitnessFunction,computationsLimit,runID).run()
-    println("Completed NiceGenetics RunID: " + runID)
-  }
-}
+
 
 class DiffEvoRunnable(nodeNumber : Int, maximumCapacity : Int,
                       generationSize : Int, fitnessFunction : NGPMatrixFitness,

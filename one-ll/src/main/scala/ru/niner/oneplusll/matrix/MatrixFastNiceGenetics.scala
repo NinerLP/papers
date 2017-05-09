@@ -1,16 +1,17 @@
 package ru.niner.oneplusll.matrix
 
 import java.io.{File, PrintWriter}
-import java.util
 import java.lang.{Long => JLong}
+import java.util
+
 import ru.niner.oneplusll.MathUtil
 
 import scala.util.Random
 
-class MatrixNiceGenetics(val nodeNumber : Int, val maximumCapacity : Int,
-                   val generationSize : Int, val crossoverSize : Int, val fitnessFunction: NGPMatrixFitness,
-                   val computationsLimit : Int, runID : Int) {
-  val algorithmName = "NiceGenetics"
+class MatrixFastNiceGenetics(val nodeNumber : Int, val maximumCapacity : Int,
+                             val generationSize : Int, val crossoverSize : Int, val fitnessFunction: NGPMatrixFitness,
+                             val computationsLimit : Int, val beta : Double, runID : Int) {
+  val algorithmName = "FastNG+UF"
   var computationsCount = 0
   val parentGraphs : util.ArrayList[MatrixGraph] = new util.ArrayList[MatrixGraph]()
   val crossoverGraphs : util.ArrayList[MatrixGraph] = new util.ArrayList[MatrixGraph]()
@@ -77,14 +78,16 @@ class MatrixNiceGenetics(val nodeNumber : Int, val maximumCapacity : Int,
 
   private def crossover() : Unit = {
     crossoverGraphs.clear()
-    for (i <- 0 until 2*crossoverSize) {
+    for (i <- 0 until crossoverSize) {
       val pos = tourney()
       val graphA = parentGraphs.get(pos.get(0))
       val graphB = parentGraphs.get(pos.get(1))
       val len = parentGraphs.get(0).capacities.size()
+      val l = Random.nextInt(len-1) + 1
+
       val cross = MatrixGraph.uniformCross(graphA,graphB,0.5)
       crossoverGraphs.add(cross._1)
-      //crossoverGraphs.add(cross._2)
+      crossoverGraphs.add(cross._2)
     }
   }
 
@@ -93,7 +96,7 @@ class MatrixNiceGenetics(val nodeNumber : Int, val maximumCapacity : Int,
     val len = parentGraphs.get(0).capacities.size()
     for (i <- 0 until crossoverGraphs.size()) {
       val numberToMutate = MathUtil.getBinomial(len,1.0/len)
-      childrenGraphs.add(MatrixGraph.mutate(crossoverGraphs.get(i),numberToMutate))
+      childrenGraphs.add(MatrixGraph.fastMutate(crossoverGraphs.get(i),beta))
       childrenGraphs.get(i).computeFitnessValue(fitnessFunction,algorithmName + " child")
       computationsCount += 1
     }
